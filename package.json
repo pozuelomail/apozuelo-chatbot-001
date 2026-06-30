@@ -1,0 +1,18 @@
+{
+  "name": "apozuelo-chatbot-001",
+  "version": "1.0.0",
+  "description": "AI Chatbot Landing Page — Alberto Pozuelo",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5",
+    "helmet": "^10.0.0",
+    "morgan": "^1.10.0",
+    "express-rate-limit": "^7.4.0",
+    "uuid": "^11.0.0"
+  }
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistente Inteligente — Alberto Pozuelo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-content">
+      <div class="hero-badge">AI Assistant</div>
+      <h1 class="hero-title">Tu asistente <span class="gradient-text">inteligente</span></h1>
+      <p class="hero-subtitle">
+        Descubre cómo la IA, la automatización y la estrategia pueden transformar tu negocio.
+        Responde unas preguntas y obtén una solución personalizada.
+      </p>
+      <button class="hero-cta" onclick="document.getElementById('chat-section').scrollIntoView({behavior:'smooth'})">
+        Comenzar ahora →
+      </button>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features">
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(0,212,255,0.1);color:#00D4FF">🤖</div>
+        <h3>Implementación de IA</h3>
+        <p>Diseño de estrategias personalizadas para integrar inteligencia artificial en tu negocio.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(16,185,129,0.1);color:#10B981">📈</div>
+        <h3>Escalar tu Proyecto</h3>
+        <p>Recursos y mentorías para llevar tu proyecto al siguiente nivel con foco y estrategia.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(245,158,11,0.1);color:#F59E0B">⚡</div>
+        <h3>Automatización</h3>
+        <p>Herramientas y flujos que eliminan tareas repetitivas y liberan tu tiempo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chat Section -->
+  <section class="chat-section" id="chat-section">
+    <div class="chat-container">
+      <div class="chat-header">
+        <div class="chat-avatar">AI</div>
+        <div>
+          <div class="chat-title">Asistente Virtual</div>
+          <div class="chat-status">
+            <span class="status-dot"></span>
+            Online — Responde en segundos
+          </div>
+        </div>
+        <button class="chat-reset" id="reset-btn" title="Nueva conversación">↺</button>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="message bot">
+          <div class="msg-bubble">
+            <div class="typing-dots"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <div class="chat-options" id="chat-options"></div>
+        <div class="chat-input-wrap" id="chat-input-wrap">
+          <input type="text" class="chat-input" id="chat-input" placeholder="Escribe tu respuesta..." autocomplete="off">
+          <button class="chat-send" id="chat-send">→</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>© 2026 Alberto Pozuelo — AI & Cloud Technical Leader</span>
+      <a href="https://albertopozuelo.com" target="_blank" rel="noopener">albertopozuelo.com</a>
+    </div>
+  </footer>
+
+  <script src="/js/chat.js"></script>
+</body>
+</html>

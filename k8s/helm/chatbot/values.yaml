@@ -1,0 +1,17 @@
+namespace: chatbot
+ingress:
+  host: chatbot.albertopozuelo.com
+app:
+  replicaCount: 1
+  port: 3000
+  image:
+    repository: chatbot/api
+    tag: latest
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
