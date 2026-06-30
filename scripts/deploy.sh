@@ -13,6 +13,8 @@ HELM_DIR="$REPO_ROOT/k8s/helm/chatbot"
 
 CRM_API_URL="${CRM_API_URL:-http://crm-api.crm.svc.cluster.local:80}"
 CRM_API_TOKEN="${CRM_API_TOKEN:-}"
+RESEND_API_KEY="${RESEND_API_KEY:-}"
+NOTIFICATION_EMAIL="${NOTIFICATION_EMAIL:-pozuelomail@gmail.com}"
 CHATBOT_HOST="${CHATBOT_HOST:-chatbot.albertopozuelo.com}"
 
 log() { echo "[$(date +%H:%M:%S)] $*"; }
@@ -36,6 +38,8 @@ sudo kubectl delete secret chatbot-secrets --namespace "$NAMESPACE" 2>/dev/null 
 sudo kubectl create secret generic chatbot-secrets \
   --namespace "$NAMESPACE" \
   --from-literal=crm_api_token="$CRM_API_TOKEN" \
+  --from-literal=resend_api_key="$RESEND_API_KEY" \
+  --from-literal=notification_email="$NOTIFICATION_EMAIL" \
   --dry-run=client -o yaml | sudo kubectl apply -f -
 log "Secrets ready"
 

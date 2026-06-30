@@ -14,7 +14,7 @@ function createSession() {
   const session = {
     id: uuidv4(),
     state: 'welcome',
-    data: { name: '', email: '', description: '', category: '', choice: '' },
+    data: { name: '', email: '', phone: '', description: '', category: '', choice: '' },
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
@@ -117,18 +117,33 @@ function handleMessage(session, message) {
     }
 
     case 'capture_data': {
+      if (!session.data.fullName) {
+        session.data.fullName = message;
+        return {
+          response: `Gracias, ${session.data.name}. ¿Cuál es tu correo electrónico para poder enviarte la información?`,
+          next: 'input',
+        };
+      }
+
       if (!session.data.email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (emailRegex.test(message)) {
           session.data.email = message;
           return {
-            response: `Perfecto. Por último, cuéntame brevemente sobre tu proyecto o negocio para poder prepararme mejor.`,
+            response: `Perfecto. ¿Podrías indicarme también tu número de teléfono para poder contactarte más rápido?`,
             next: 'input',
           };
         }
-        session.data.fullName = message;
         return {
-          response: `Gracias, ${session.data.name}. ¿Cuál es tu correo electrónico para poder enviarte la información?`,
+          response: `El correo electrónico no parece válido. ¿Puedes escribirlo nuevamente?`,
+          next: 'input',
+        };
+      }
+
+      if (!session.data.phone) {
+        session.data.phone = message;
+        return {
+          response: `Genial. Por último, cuéntame brevemente sobre tu proyecto o negocio para poder prepararme mejor.`,
           next: 'input',
         };
       }
@@ -141,6 +156,7 @@ function handleMessage(session, message) {
         crmData: {
           full_name: session.data.fullName || session.data.name,
           email: session.data.email,
+          phone: session.data.phone,
           notes: `Proyecto: ${session.data.description_detail}\nInterés: ${session.data.category}\nOpción: ${session.data.choice}`,
           status: 'active',
           acquisition_source: 'Chatbot-001',

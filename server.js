@@ -7,8 +7,11 @@ const rateLimit = require('express-rate-limit');
 const http = require('http');
 const { handleMessage, handleOption, getSession, createSession } = require('./src/chatbot-flow');
 
+const https = require('https');
 const CRM_API_URL = process.env.CRM_API_URL || 'http://crm-api.crm.svc.cluster.local:80';
 const CRM_API_TOKEN = process.env.CRM_API_TOKEN || '';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || 'pozuelomail@gmail.com';
 
 function sendToCRM(crmData) {
   if (!CRM_API_TOKEN || !crmData) return;
@@ -32,6 +35,7 @@ function sendToCRM(crmData) {
     res.on('end', () => {
       if (res.statusCode < 300) {
         console.log('[CRM] Lead created:', crmData.email);
+        sendEmailNotification(crmData);
       } else {
         console.warn('[CRM] Error creating lead:', res.statusCode, body);
       }
@@ -40,6 +44,68 @@ function sendToCRM(crmData) {
   req.on('error', (err) => console.error('[CRM] Request failed:', err.message));
   req.write(payload);
   req.end();
+}
+
+function sendEmailNotification(crmData) {
+  if (!RESEND_API_KEY) {
+    console.log('[EMAIL] No RESEND_API_KEY configured, skipping notification');
+    return;
+  }
+  const subject = `Nuevo lead desde Chatbot — ${crmData.full_name}`;
+  const html = `
+    <div style="font-family:Inter,sans-serif;background:#080E1A;padding:32px;color:#E8EDF5">
+      <div style="max-width:560px;margin:0 auto;background:#111B33;border:1px solid #1E3355;border-radius:12px;padding:28px">
+        <div style="font-size:13px;color:#00D4FF;font-weight:600;margin-bottom:16px;font-family:'JetBrains Mono',monospace">NUEVO LEAD · CHATBOT-001</div>
+        <table style="width:100%;border-collapse:collapse;font-size:14px">
+          <tr><td style="padding:8px 0;color:#556688">Nombre</td><td style="padding:8px 0;font-weight:600">${escHtml(crmData.full_name)}</td></tr>
+          <tr><td style="padding:8px 0;color:#556688">Email</td><td style="padding:8px 0">${escHtml(crmData.email)}</td></tr>
+          <tr><td style="padding:8px 0;color:#556688">Teléfono</td><td style="padding:8px 0">${escHtml(crmData.phone || '—')}</td></tr>
+          <tr><td style="padding:8px 0;color:#556688">Empresa</td><td style="padding:8px 0">${escHtml(crmData.company || '—')}</td></tr>
+          <tr><td style="padding:8px 0;color:#556688">Interés</td><td style="padding:8px 0">${escHtml(crmData.notes || '—')}</td></tr>
+        </table>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #1E3355;font-size:12px;color:#556688">
+          <a href="https://crm.albertopozuelo.com" style="color:#00D4FF;text-decoration:none">Abrir CRM →</a>
+        </div>
+      </div>
+    </div>`;
+
+  const payload = JSON.stringify({
+    from: 'Chatbot <onboarding@resend.dev>',
+    to: [NOTIFICATION_EMAIL],
+    subject,
+    html,
+  });
+  const options = {
+    hostname: 'api.resend.com',
+    port: 443,
+    path: '/emails',
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload),
+    },
+    timeout: 10000,
+  };
+  const req = https.request(options, (res) => {
+    let body = '';
+    res.on('data', (c) => body += c);
+    res.on('end', () => {
+      if (res.statusCode < 300) {
+        console.log('[EMAIL] Notification sent for:', crmData.email);
+      } else {
+        console.warn('[EMAIL] Send failed:', res.statusCode, body.slice(0, 200));
+      }
+    });
+  });
+  req.on('error', (err) => console.error('[EMAIL] Request error:', err.message));
+  req.write(payload);
+  req.end();
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 const app = express();

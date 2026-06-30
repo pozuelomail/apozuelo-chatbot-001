@@ -42,6 +42,16 @@ spec:
                 secretKeyRef:
                   name: chatbot-secrets
                   key: crm_api_token
+            - name: RESEND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: resend_api_key
+            - name: NOTIFICATION_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: notification_email
           resources:
             requests:
               cpu: {{ .Values.app.resources.requests.cpu }}
