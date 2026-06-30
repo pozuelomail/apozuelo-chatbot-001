@@ -35,6 +35,13 @@ spec:
               value: "{{ .Values.app.port }}"
             - name: NODE_ENV
               value: production
+            - name: CRM_API_URL
+              value: "http://crm-api.crm.svc.cluster.local:80"
+            - name: CRM_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: crm_api_token
           resources:
             requests:
               cpu: {{ .Values.app.resources.requests.cpu }}

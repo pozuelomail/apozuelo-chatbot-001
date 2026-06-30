@@ -4,7 +4,43 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const http = require('http');
 const { handleMessage, handleOption, getSession, createSession } = require('./src/chatbot-flow');
+
+const CRM_API_URL = process.env.CRM_API_URL || 'http://crm-api.crm.svc.cluster.local:80';
+const CRM_API_TOKEN = process.env.CRM_API_TOKEN || '';
+
+function sendToCRM(crmData) {
+  if (!CRM_API_TOKEN || !crmData) return;
+  const url = new URL('/api/customers', CRM_API_URL);
+  const payload = JSON.stringify(crmData);
+  const options = {
+    hostname: url.hostname,
+    port: url.port,
+    path: url.pathname,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload),
+      'Authorization': `Bearer ${CRM_API_TOKEN}`,
+    },
+    timeout: 5000,
+  };
+  const req = http.request(options, (res) => {
+    let body = '';
+    res.on('data', (c) => body += c);
+    res.on('end', () => {
+      if (res.statusCode < 300) {
+        console.log('[CRM] Lead created:', crmData.email);
+      } else {
+        console.warn('[CRM] Error creating lead:', res.statusCode, body);
+      }
+    });
+  });
+  req.on('error', (err) => console.error('[CRM] Request failed:', err.message));
+  req.write(payload);
+  req.end();
+}
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3000');
@@ -53,6 +89,13 @@ app.post('/api/chat', (req, res) => {
   } else {
     result = handleMessage(session, message.trim());
   }
+
+  if (result.crmData) {
+    const crmData = result.crmData;
+    delete result.crmData;
+    setImmediate(() => sendToCRM(crmData));
+  }
+
   res.json({ sessionId: session.id, ...result });
 });
 

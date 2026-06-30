@@ -138,6 +138,14 @@ function handleMessage(session, message) {
       return {
         response: `¡Gracias, ${session.data.name}! Con esta información, puedo prepararme mejor para ayudarte. Te contactaré pronto con más detalles.\n\nMientras tanto, ¿hay algo más en lo que pueda asistirte?`,
         next: 'input',
+        crmData: {
+          full_name: session.data.fullName || session.data.name,
+          email: session.data.email,
+          notes: `Proyecto: ${session.data.description_detail}\nInterés: ${session.data.category}\nOpción: ${session.data.choice}`,
+          status: 'active',
+          acquisition_source: 'Chatbot-001',
+          company: session.data.name,
+        },
       };
     }
 
@@ -190,7 +198,10 @@ function handleOption(session, optionId) {
   if (session.state === 'solution_ia' || session.state === 'solution_scale' || session.state === 'solution_automation') {
     session.data.choice = optionId;
     session.state = 'capture_data';
-    return handleMessage(session, optionId);
+    return {
+      response: `Perfecto. Para poder ayudarte mejor, ¿puedes confirmarme tu nombre completo?`,
+      next: 'input',
+    };
   }
 
   return handleMessage(session, optionId);
