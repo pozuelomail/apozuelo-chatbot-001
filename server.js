@@ -12,6 +12,7 @@ const CRM_API_URL = process.env.CRM_API_URL || 'http://crm-api.crm.svc.cluster.l
 const CRM_API_TOKEN = process.env.CRM_API_TOKEN || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || 'pozuelomail@gmail.com';
+const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || '';
 
 function sendToCRM(crmData) {
   if (!CRM_API_TOKEN || !crmData) return;
@@ -36,6 +37,7 @@ function sendToCRM(crmData) {
       if (res.statusCode < 300) {
         console.log('[CRM] Lead created:', crmData.email);
         sendEmailNotification(crmData);
+        sendToN8N(crmData);
       } else {
         console.warn('[CRM] Error creating lead:', res.statusCode, body);
       }
@@ -99,6 +101,51 @@ function sendEmailNotification(crmData) {
     });
   });
   req.on('error', (err) => console.error('[EMAIL] Request error:', err.message));
+  req.write(payload);
+  req.end();
+}
+
+function sendToN8N(crmData) {
+  if (!N8N_WEBHOOK_URL) {
+    console.log('[N8N] No N8N_WEBHOOK_URL configured, skipping');
+    return;
+  }
+  const url = new URL(N8N_WEBHOOK_URL);
+  const payload = JSON.stringify({
+    event: 'new_lead',
+    timestamp: new Date().toISOString(),
+    source: 'chatbot-001',
+    data: {
+      full_name: crmData.full_name,
+      email: crmData.email,
+      phone: crmData.phone || '',
+      company: crmData.company || '',
+      notes: crmData.notes || '',
+    },
+  });
+  const options = {
+    hostname: url.hostname,
+    port: url.port || 443,
+    path: url.pathname + url.search,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload),
+    },
+    timeout: 10000,
+  };
+  const req = https.request(options, (res) => {
+    let body = '';
+    res.on('data', (c) => body += c);
+    res.on('end', () => {
+      if (res.statusCode < 300) {
+        console.log('[N8N] Webhook sent for:', crmData.email);
+      } else {
+        console.warn('[N8N] Webhook error:', res.statusCode, body.slice(0, 200));
+      }
+    });
+  });
+  req.on('error', (err) => console.error('[N8N] Request failed:', err.message));
   req.write(payload);
   req.end();
 }

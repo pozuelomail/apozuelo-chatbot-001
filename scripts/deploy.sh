@@ -15,6 +15,7 @@ CRM_API_URL="${CRM_API_URL:-http://crm-api.crm.svc.cluster.local:80}"
 CRM_API_TOKEN="${CRM_API_TOKEN:-}"
 RESEND_API_KEY="${RESEND_API_KEY:-}"
 NOTIFICATION_EMAIL="${NOTIFICATION_EMAIL:-pozuelomail@gmail.com}"
+N8N_WEBHOOK_URL="${N8N_WEBHOOK_URL:-}"
 CHATBOT_HOST="${CHATBOT_HOST:-chatbot.albertopozuelo.com}"
 
 log() { echo "[$(date +%H:%M:%S)] $*"; }
@@ -40,6 +41,7 @@ sudo kubectl create secret generic chatbot-secrets \
   --from-literal=crm_api_token="$CRM_API_TOKEN" \
   --from-literal=resend_api_key="$RESEND_API_KEY" \
   --from-literal=notification_email="$NOTIFICATION_EMAIL" \
+  --from-literal=n8n_webhook_url="$N8N_WEBHOOK_URL" \
   --dry-run=client -o yaml | sudo kubectl apply -f -
 log "Secrets ready"
 
