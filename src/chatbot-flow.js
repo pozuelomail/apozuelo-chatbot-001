@@ -1,5 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 
+const CAL_URL = 'https://cal.com/alberto-pozuelo-mozas-f4vngb';
+
 const sessions = new Map();
 const SESSION_TTL = 30 * 60 * 1000;
 
@@ -162,7 +164,7 @@ function handleMessage(session, message) {
       session.data.description_detail = message;
       session.state = 'farewell';
       return {
-        response: `¡Gracias, ${session.data.name}! Con esta información, puedo prepararme mejor para ayudarte. Te contactaré pronto con más detalles.\n\nMientras tanto, ¿hay algo más en lo que pueda asistirte?`,
+        response: `¡Gracias, ${session.data.name}! Con esta información, puedo prepararme mejor para ayudarte. Alberto se pondrá en contacto contigo pronto.\n\n📅 También puedes reservar una sesión directamente aquí:\n${CAL_URL}\n\n¿Hay algo más en lo que pueda asistirte?`,
         next: 'input',
         crmData: {
           full_name: session.data.fullName || session.data.name,
@@ -222,7 +224,7 @@ function handleOption(session, optionId) {
     else if (optionId === 'talk_to_alberto') {
       session.state = 'capture_data';
       return {
-        response: `Entendido. Prefieres hablar directamente con Alberto. Para poder ponerlos en contacto, ¿puedes confirmarme tu nombre completo?`,
+        response: `Entendido. Puedes reservar una llamada con Alberto directamente aquí:\n📅 ${CAL_URL}\n\nO si prefieres que te contactemos nosotros, dime tu nombre completo y te escribimos.`,
         next: 'input',
       };
     }
