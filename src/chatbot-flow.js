@@ -69,8 +69,11 @@ function handleMessage(session, message) {
       text += `📈 Si necesitas **escalar tu proyecto**, tengo recursos y mentorías específicas para eso.\n`;
       options.push({ id: 'scale', label: 'Escalar mi proyecto' });
 
-      text += `⚡ Si quieres **automatizar procesos**, puedo mostrarte herramientas y flujos que funcionan.\n\n`;
+      text += `⚡ Si quieres **automatizar procesos**, puedo mostrarte herramientas y flujos que funcionan.\n`;
       options.push({ id: 'automation', label: 'Automatizar procesos' });
+
+      text += `👤 Si prefieres, puedes **hablar directamente con Alberto**.\n\n`;
+      options.push({ id: 'talk_to_alberto', label: 'Ninguna, prefiero hablar con Alberto' });
 
       text += `¿Cuál de estas opciones resuena más contigo?`;
 
@@ -81,7 +84,7 @@ function handleMessage(session, message) {
       session.data.choice = message;
       session.state = 'capture_data';
       return {
-        response: `¡Genial! La IA puede transformar tu negocio. ¿Te gustaría:\n\n1️⃣ Recibir una guía gratuita sobre cómo empezar con IA.\n2️⃣ Agendar una llamada gratuita para explorar cómo implementarla en tu caso.\n\nEscribe **1** o **2** según prefieras.`,
+        response: `¡Genial! La IA puede transformar tu negocio. ¿Te gustaría:\n\n1️⃣ Recibir una guía gratuita sobre cómo empezar con IA.\n2️⃣ Agendar una llamada gratuita para explorar cómo implementarla en tu caso.\n\nElije una de estas opciones.`,
         next: 'options',
         options: [
           { id: 'guide', label: 'Guía gratuita' },
@@ -94,7 +97,7 @@ function handleMessage(session, message) {
       session.data.choice = message;
       session.state = 'capture_data';
       return {
-        response: `Escalar un proyecto requiere estrategia y foco. ¿Qué prefieres?\n\n1️⃣ Un mini-curso gratuito sobre cómo escalar tu negocio.\n2️⃣ Una sesión personalizada para diseñar tu plan de escalamiento.\n\nEscribe **1** o **2** según prefieras.`,
+        response: `Escalar un proyecto requiere estrategia y foco. ¿Qué prefieres?\n\n1️⃣ Un mini-curso gratuito sobre cómo escalar tu negocio.\n2️⃣ Una sesión personalizada para diseñar tu plan de escalamiento.\n\nElije una de estas opciones.`,
         next: 'options',
         options: [
           { id: 'course', label: 'Mini-curso gratuito' },
@@ -107,7 +110,7 @@ function handleMessage(session, message) {
       session.data.choice = message;
       session.state = 'capture_data';
       return {
-        response: `Automatizar procesos es clave para ahorrar tiempo y energía. ¿Qué prefieres?\n\n1️⃣ Una lista de herramientas recomendadas para empezar.\n2️⃣ Una llamada para diseñar un flujo de automatización adaptado a tu negocio.\n\nEscribe **1** o **2** según prefieras.`,
+        response: `Automatizar procesos es clave para ahorrar tiempo y energía. ¿Qué prefieres?\n\n1️⃣ Una lista de herramientas recomendadas para empezar.\n2️⃣ Una llamada para diseñar un flujo de automatización adaptado a tu negocio.\n\nElije una de estas opciones.`,
         next: 'options',
         options: [
           { id: 'tools', label: 'Lista de herramientas' },
@@ -130,7 +133,7 @@ function handleMessage(session, message) {
         if (emailRegex.test(message)) {
           session.data.email = message;
           return {
-            response: `Perfecto. ¿Podrías indicarme también tu número de teléfono para poder contactarte más rápido?`,
+            response: `Perfecto. ¿Podrías indicarme también tu número de teléfono para poder contactarte más rápido? (recuerda añadir tu prefijo)`,
             next: 'input',
           };
         }
@@ -142,8 +145,16 @@ function handleMessage(session, message) {
 
       if (!session.data.phone) {
         session.data.phone = message;
+        const phoneRegex = /^\+?\d{8,15}$/;
+        if (phoneRegex.test(message)) {
+          return {
+            response: `Genial. Por último, cuéntame brevemente sobre tu proyecto o negocio para poder prepararme mejor.`,
+            next: 'input',
+          };
+        }
+        session.data.phone = '';
         return {
-          response: `Genial. Por último, cuéntame brevemente sobre tu proyecto o negocio para poder prepararme mejor.`,
+          response: `El número de teléfono no parece válido — recuerda añadir tu prefijo (ej. +34XXXXXXXXX). Solo números y el símbolo +. Intenta de nuevo.`,
           next: 'input',
         };
       }
@@ -167,9 +178,10 @@ function handleMessage(session, message) {
 
     case 'farewell': {
       if (/no|nada|gracias|eso es todo/i.test(message)) {
-        session.state = 'feedback';
+        session.state = 'welcome';
+        session.data = { name: '', email: '', phone: '', description: '', category: '', choice: '' };
         return {
-          response: `Antes de despedirnos, ¿esta conversación te fue útil? ¿Hay algo que crees que podría mejorar?`,
+          response: `¡Entendido! Me alegra haberte sido de ayuda. La conversación se ha reiniciado. ¿En qué puedo ayudarte ahora?`,
           next: 'input',
         };
       }
@@ -207,6 +219,13 @@ function handleOption(session, optionId) {
     if (optionId === 'ia') session.state = 'solution_ia';
     else if (optionId === 'scale') session.state = 'solution_scale';
     else if (optionId === 'automation') session.state = 'solution_automation';
+    else if (optionId === 'talk_to_alberto') {
+      session.state = 'capture_data';
+      return {
+        response: `Entendido. Prefieres hablar directamente con Alberto. Para poder ponerlos en contacto, ¿puedes confirmarme tu nombre completo?`,
+        next: 'input',
+      };
+    }
     else return { response: 'Por favor, selecciona una de las opciones disponibles.', next: 'options' };
     return handleMessage(session, optionId);
   }
