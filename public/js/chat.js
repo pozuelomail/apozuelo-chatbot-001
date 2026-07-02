@@ -35,6 +35,7 @@ async function sendMessage(message) {
   } finally {
     waiting = false;
     setLoading(false);
+    requestAnimationFrame(() => chatInput.focus());
   }
 }
 
@@ -64,6 +65,7 @@ async function sendOption(optionId, label) {
   } finally {
     waiting = false;
     setLoading(false);
+    requestAnimationFrame(() => chatInput.focus());
   }
 }
 
@@ -83,7 +85,7 @@ function handleResponse(data) {
   if (data.next === 'input') {
     clearOptions();
     inputWrap.style.display = 'flex';
-    chatInput.focus();
+    requestAnimationFrame(() => chatInput.focus());
     return;
   }
 
@@ -165,6 +167,7 @@ function resetChat() {
   chatInput.disabled = false;
   chatSend.disabled = false;
   chatInput.value = '';
+  requestAnimationFrame(() => chatInput.focus());
   startChat();
 }
 
@@ -180,6 +183,7 @@ function startChat() {
       sessionId = data.sessionId;
       removeTyping();
       handleResponse(data);
+      requestAnimationFrame(() => chatInput.focus());
     })
     .catch(() => {
       removeTyping();
