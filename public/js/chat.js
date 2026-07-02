@@ -70,6 +70,10 @@ async function sendOption(optionId, label) {
 function handleResponse(data) {
   addMessage(data.response, 'bot');
 
+  if (data.linkButton) {
+    renderLinkButton(data.linkButton);
+  }
+
   if (data.next === 'end') {
     clearOptions();
     inputWrap.style.display = 'none';
@@ -98,6 +102,20 @@ function renderOptions(options) {
     btn.onclick = () => sendOption(opt.id, opt.label);
     chatOptions.appendChild(btn);
   });
+}
+
+function renderLinkButton(link) {
+  const wrap = document.createElement('div');
+  wrap.className = 'link-btn-wrap';
+  const btn = document.createElement('a');
+  btn.className = 'link-btn';
+  btn.href = link.url;
+  btn.target = '_blank';
+  btn.rel = 'noopener noreferrer';
+  btn.textContent = link.label;
+  wrap.appendChild(btn);
+  chatMessages.appendChild(wrap);
+  scrollBottom();
 }
 
 function clearOptions() {

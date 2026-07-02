@@ -162,19 +162,32 @@ function handleMessage(session, message) {
       }
 
       session.data.description_detail = message;
+
+      const crmData = {
+        full_name: session.data.fullName || session.data.name,
+        email: session.data.email,
+        phone: session.data.phone,
+        notes: `Proyecto: ${session.data.description_detail}\nInterés: ${session.data.category}\nOpción: ${session.data.choice}`,
+        status: 'active',
+        acquisition_source: 'Chatbot-001',
+        company: session.data.name,
+      };
+
+      if (session.data.flow === 'call_booking') {
+        session.state = 'ended';
+        return {
+          response: `¡Gracias, ${session.data.name}! Con esta información, puedo prepararme mejor para ayudarte. Alberto se pondrá en contacto contigo pronto.`,
+          next: 'end',
+          linkButton: { url: CAL_URL, label: 'Reservar llamada con Alberto' },
+          crmData,
+        };
+      }
+
       session.state = 'farewell';
       return {
         response: `¡Gracias, ${session.data.name}! Con esta información, puedo prepararme mejor para ayudarte. Alberto se pondrá en contacto contigo pronto.\n\n📅 También puedes reservar una sesión directamente aquí:\n${CAL_URL}\n\n¿Hay algo más en lo que pueda asistirte?`,
         next: 'input',
-        crmData: {
-          full_name: session.data.fullName || session.data.name,
-          email: session.data.email,
-          phone: session.data.phone,
-          notes: `Proyecto: ${session.data.description_detail}\nInterés: ${session.data.category}\nOpción: ${session.data.choice}`,
-          status: 'active',
-          acquisition_source: 'Chatbot-001',
-          company: session.data.name,
-        },
+        crmData,
       };
     }
 
@@ -202,6 +215,7 @@ function handleMessage(session, message) {
       };
     }
 
+    case 'show_tools':
     case 'ended':
       return {
         response: `Tu sesión ha finalizado. Si necesitas ayuda nuevamente, recarga la página y con gusto te atenderé. ¡Un abrazo!`,
@@ -232,7 +246,25 @@ function handleOption(session, optionId) {
     return handleMessage(session, optionId);
   }
 
-  if (session.state === 'solution_ia' || session.state === 'solution_scale' || session.state === 'solution_automation') {
+  if (session.state === 'solution_automation') {
+    if (optionId === 'tools') {
+      session.data.choice = optionId;
+      session.state = 'ended';
+      return {
+        response: `Basado en tu interés en automatización de procesos, estas son las herramientas que te recomiendo:\n\n🔹 **n8n** — Ideal para flujos de trabajo complejos con múltiples integraciones. Es la que más recomiendo por su flexibilidad.\n🔹 **Zapier** — Perfecto para conectar apps populares sin necesidad de código.\n🔹 **Make (antes Integromat)** — Excelente para automatizaciones visuales con lógica condicional.\n🔹 **UiPath** — Para automatización robótica de procesos (RPA) a nivel empresarial.\n🔹 **Python + scripts personalizados** — Automatización a medida para necesidades específicas.\n\nSi necesitas ayuda con alguna de estas herramientas o quieres una solución personalizada, no dudes en contactar con Alberto. ¡Estoy aquí para lo que necesites! 🚀`,
+        next: 'end',
+      };
+    }
+    session.data.choice = optionId;
+    session.data.flow = 'call_booking';
+    session.state = 'capture_data';
+    return {
+      response: `Perfecto. Para poder ayudarte mejor, ¿puedes confirmarme tu nombre completo?`,
+      next: 'input',
+    };
+  }
+
+  if (session.state === 'solution_ia' || session.state === 'solution_scale') {
     session.data.choice = optionId;
     session.state = 'capture_data';
     return {
