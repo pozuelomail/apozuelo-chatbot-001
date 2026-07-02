@@ -84,9 +84,16 @@ function handleMessage(session, message) {
 
     case 'capture_data': {
       if (!session.data.fullName) {
-        session.data.fullName = message;
+        const nameRegex = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s'-]+$/;
+        if (nameRegex.test(message)) {
+          session.data.fullName = message;
+          return {
+            response: `Gracias, ${session.data.name}. ¿Cuál es tu correo electrónico para que Alberto pueda contactarte? (ej. nombre@correo.com)`,
+            next: 'input',
+          };
+        }
         return {
-          response: `Gracias, ${session.data.name}. ¿Cuál es tu correo electrónico para que Alberto pueda contactarte? (ej. nombre@correo.com)`,
+          response: `El nombre solo puede contener letras y espacios. ¿Puedes escribirlo nuevamente? (ej. María García)`,
           next: 'input',
         };
       }
