@@ -135,10 +135,13 @@ function handleMessage(session, message) {
         full_name: session.data.fullName || session.data.name,
         email: session.data.email,
         phone: session.data.phone,
-        notes: `Proyecto: ${session.data.description_detail}\nInterés: ${session.data.category}\nOpción: ${session.data.choice}`,
+        notes: session.data.description_detail,
         status: 'active',
         acquisition_source: 'Chatbot-001',
-        company: session.data.name,
+        metadata: {
+          category: session.data.category,
+          choice: session.data.choice,
+        },
       };
 
       session.state = 'ended';
