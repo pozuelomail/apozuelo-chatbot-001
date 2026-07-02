@@ -63,69 +63,30 @@ function handleMessage(session, message) {
       session.data.category = category;
 
       const options = [];
-      let text = `Entendido, ${session.data.name}. Esto es lo que puedo ofrecerte según lo que me cuentas:\n\n`;
+      let text = `Entendido, ${session.data.name}. Cuéntame, ¿qué área te interesa más? Todas las opciones incluyen una **asesoría gratuita de 30 minutos** con Alberto:\n\n`;
 
-      text += `🤖 Si buscas **implementar IA**, puedo ayudarte a diseñar una estrategia personalizada.\n`;
+      text += `🤖 **Implementar IA** — intégrala en tu negocio de forma práctica.\n`;
       options.push({ id: 'ia', label: 'Implementar IA' });
 
-      text += `📈 Si necesitas **escalar tu proyecto**, tengo recursos y mentorías específicas para eso.\n`;
+      text += `📈 **Escalar tu proyecto** — lleva tu proyecto al siguiente nivel.\n`;
       options.push({ id: 'scale', label: 'Escalar mi proyecto' });
 
-      text += `⚡ Si quieres **automatizar procesos**, puedo mostrarte herramientas y flujos que funcionan.\n`;
+      text += `⚡ **Automatizar procesos** — libera tiempo y reduce errores.\n`;
       options.push({ id: 'automation', label: 'Automatizar procesos' });
 
-      text += `👤 Si prefieres, puedes **hablar directamente con Alberto**.\n\n`;
-      options.push({ id: 'talk_to_alberto', label: 'Ninguna, prefiero hablar con Alberto' });
+      text += `👤 **Hablar directamente con Alberto**.\n\n`;
+      options.push({ id: 'talk_to_alberto', label: 'Hablar con Alberto' });
 
-      text += `¿Cuál de estas opciones resuena más contigo?`;
+      text += `¿Cuál te interesa?`;
 
       return { response: text, next: 'options', options };
-    }
-
-    case 'solution_ia': {
-      session.data.choice = message;
-      session.state = 'capture_data';
-      return {
-        response: `¡Genial! La IA puede transformar tu negocio. ¿Te gustaría:\n\n1️⃣ Recibir una guía gratuita sobre cómo empezar con IA.\n2️⃣ Agendar una llamada gratuita para explorar cómo implementarla en tu caso.\n\nElije una de estas opciones.`,
-        next: 'options',
-        options: [
-          { id: 'guide', label: 'Guía gratuita' },
-          { id: 'call', label: 'Llamada gratuita' },
-        ],
-      };
-    }
-
-    case 'solution_scale': {
-      session.data.choice = message;
-      session.state = 'capture_data';
-      return {
-        response: `Escalar un proyecto requiere estrategia y foco. ¿Qué prefieres?\n\n1️⃣ Un mini-curso gratuito sobre cómo escalar tu negocio.\n2️⃣ Una sesión personalizada para diseñar tu plan de escalamiento.\n\nElije una de estas opciones.`,
-        next: 'options',
-        options: [
-          { id: 'course', label: 'Mini-curso gratuito' },
-          { id: 'session', label: 'Sesión personalizada' },
-        ],
-      };
-    }
-
-    case 'solution_automation': {
-      session.data.choice = message;
-      session.state = 'capture_data';
-      return {
-        response: `Automatizar procesos es clave para ahorrar tiempo y energía. ¿Qué prefieres?\n\n1️⃣ Una lista de herramientas recomendadas para empezar.\n2️⃣ Una llamada para diseñar un flujo de automatización adaptado a tu negocio.\n\nElije una de estas opciones.`,
-        next: 'options',
-        options: [
-          { id: 'tools', label: 'Lista de herramientas' },
-          { id: 'call', label: 'Llamada de diseño' },
-        ],
-      };
     }
 
     case 'capture_data': {
       if (!session.data.fullName) {
         session.data.fullName = message;
         return {
-          response: `Gracias, ${session.data.name}. ¿Cuál es tu correo electrónico para poder enviarte la información?`,
+          response: `Gracias, ${session.data.name}. ¿Cuál es tu correo electrónico para que Alberto pueda contactarte?`,
           next: 'input',
         };
       }
@@ -173,20 +134,11 @@ function handleMessage(session, message) {
         company: session.data.name,
       };
 
-      if (session.data.flow === 'call_booking') {
-        session.state = 'ended';
-        return {
-          response: `¡Gracias, ${session.data.name}! Con esta información, puedo prepararme mejor para ayudarte. Alberto se pondrá en contacto contigo pronto.`,
-          next: 'end',
-          linkButton: { url: CAL_URL, label: 'Reservar llamada con Alberto' },
-          crmData,
-        };
-      }
-
-      session.state = 'farewell';
+      session.state = 'ended';
       return {
-        response: `¡Gracias, ${session.data.name}! Con esta información, puedo prepararme mejor para ayudarte. Alberto se pondrá en contacto contigo pronto.\n\n📅 También puedes reservar una sesión directamente aquí:\n${CAL_URL}\n\n¿Hay algo más en lo que pueda asistirte?`,
-        next: 'input',
+        response: `¡Gracias, ${session.data.name}! Con esta información, puedo prepararme mejor para ayudarte. Alberto se pondrá en contacto contigo pronto.`,
+        next: 'end',
+        linkButton: { url: CAL_URL, label: 'Reservar asesoría gratuita de 30 min' },
         crmData,
       };
     }
@@ -215,7 +167,6 @@ function handleMessage(session, message) {
       };
     }
 
-    case 'show_tools':
     case 'ended':
       return {
         response: `Tu sesión ha finalizado. Si necesitas ayuda nuevamente, recarga la página y con gusto te atenderé. ¡Un abrazo!`,
@@ -232,43 +183,14 @@ function handleOption(session, optionId) {
   session.updatedAt = Date.now();
 
   if (session.state === 'classify') {
-    if (optionId === 'ia') session.state = 'solution_ia';
-    else if (optionId === 'scale') session.state = 'solution_scale';
-    else if (optionId === 'automation') session.state = 'solution_automation';
-    else if (optionId === 'talk_to_alberto') {
-      session.state = 'capture_data';
-      return {
-        response: `Entendido. Puedes reservar una llamada con Alberto directamente aquí:\n📅 ${CAL_URL}\n\nO si prefieres que te contactemos nosotros, dime tu nombre completo y te escribimos.`,
-        next: 'input',
-      };
+    const validOptions = ['ia', 'scale', 'automation', 'talk_to_alberto'];
+    if (!validOptions.includes(optionId)) {
+      return { response: 'Por favor, selecciona una de las opciones disponibles.', next: 'options' };
     }
-    else return { response: 'Por favor, selecciona una de las opciones disponibles.', next: 'options' };
-    return handleMessage(session, optionId);
-  }
-
-  if (session.state === 'solution_automation') {
-    if (optionId === 'tools') {
-      session.data.choice = optionId;
-      session.state = 'ended';
-      return {
-        response: `Basado en tu interés en automatización de procesos, estas son las herramientas que te recomiendo:\n\n🔹 **n8n** — Ideal para flujos de trabajo complejos con múltiples integraciones. Es la que más recomiendo por su flexibilidad.\n🔹 **Zapier** — Perfecto para conectar apps populares sin necesidad de código.\n🔹 **Make (antes Integromat)** — Excelente para automatizaciones visuales con lógica condicional.\n🔹 **UiPath** — Para automatización robótica de procesos (RPA) a nivel empresarial.\n🔹 **Python + scripts personalizados** — Automatización a medida para necesidades específicas.\n\nSi necesitas ayuda con alguna de estas herramientas o quieres una solución personalizada, no dudes en contactar con Alberto. ¡Estoy aquí para lo que necesites! 🚀`,
-        next: 'end',
-      };
-    }
-    session.data.choice = optionId;
-    session.data.flow = 'call_booking';
-    session.state = 'capture_data';
-    return {
-      response: `Perfecto. Para poder ayudarte mejor, ¿puedes confirmarme tu nombre completo?`,
-      next: 'input',
-    };
-  }
-
-  if (session.state === 'solution_ia' || session.state === 'solution_scale') {
     session.data.choice = optionId;
     session.state = 'capture_data';
     return {
-      response: `Perfecto. Para poder ayudarte mejor, ¿puedes confirmarme tu nombre completo?`,
+      response: `Perfecto. Para agendar tu asesoría gratuita de 30 minutos, necesito algunos datos. ¿Puedes confirmarme tu nombre completo?`,
       next: 'input',
     };
   }
