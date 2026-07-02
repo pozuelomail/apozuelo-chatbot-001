@@ -86,7 +86,7 @@ function handleMessage(session, message) {
       if (!session.data.fullName) {
         session.data.fullName = message;
         return {
-          response: `Gracias, ${session.data.name}. ¿Cuál es tu correo electrónico para que Alberto pueda contactarte?`,
+          response: `Gracias, ${session.data.name}. ¿Cuál es tu correo electrónico para que Alberto pueda contactarte? (ej. nombre@correo.com)`,
           next: 'input',
         };
       }
@@ -96,12 +96,12 @@ function handleMessage(session, message) {
         if (emailRegex.test(message)) {
           session.data.email = message;
           return {
-            response: `Perfecto. ¿Podrías indicarme también tu número de teléfono para poder contactarte más rápido? (recuerda añadir tu prefijo)`,
+            response: `Perfecto. ¿Podrías indicarme también tu número de teléfono para poder contactarte más rápido? (recuerda añadir tu prefijo — ej. +34XXXXXXXXX)`,
             next: 'input',
           };
         }
         return {
-          response: `El correo electrónico no parece válido. ¿Puedes escribirlo nuevamente?`,
+          response: `El formato del correo no es correcto. Asegúrate de escribir algo como nombre@correo.com. Intenta de nuevo.`,
           next: 'input',
         };
       }
