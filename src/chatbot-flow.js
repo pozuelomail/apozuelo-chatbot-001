@@ -135,10 +135,13 @@ function handleMessage(session, message) {
       };
 
       session.state = 'ended';
+
+      const bookingUrl = `${CAL_URL}?name=${encodeURIComponent(session.data.fullName || session.data.name)}&email=${encodeURIComponent(session.data.email)}`;
+
       return {
         response: `¡Gracias, ${session.data.name}! Con esta información, puedo prepararme mejor para ayudarte. Alberto se pondrá en contacto contigo pronto.`,
         next: 'end',
-        linkButton: { url: CAL_URL, label: 'Reservar asesoría gratuita de 30 min' },
+        linkButton: { url: bookingUrl, label: 'Reservar asesoría gratuita de 30 min' },
         crmData,
       };
     }
